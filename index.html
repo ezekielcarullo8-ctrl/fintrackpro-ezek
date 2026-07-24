@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="stylesheet" href="style.css">
+    <title>FinTrack Pro</title>
+
+</head>
+<body>
+    <div class="bg-gradient"></div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="app-title">FinTrack Pro</div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="app.exportData()" title="Export">💾</button>
+            <button class="icon-btn" onclick="app.importData()" title="Import">📂</button>
+            <button class="icon-btn" onclick="app.toggleTheme()" id="themeBtn">🌙</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- BALANCES TAB -->
+        <div class="tab-content active" id="tab-balances">
+            <div class="balance-grid animate-slide-up">
+                <div class="balance-card">
+                    <div class="balance-label">Total Balance</div>
+                    <div class="balance-amount" id="totalBalance">$0.00</div>
+                </div>
+                <div class="balance-card savings">
+                    <div class="balance-label">Savings</div>
+                    <div class="balance-amount" id="totalSavings" style="color: var(--accent-gold);">$0.00</div>
+                </div>
+            </div>
+
+            <div class="stats-row animate-slide-up" style="animation-delay: 0.1s">
+                <div class="stat-item">
+                    <div class="stat-value income" id="monthIncome">+$0.00</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value expense" id="monthExpense">-$0.00</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+            </div>
+
+            <div class="card budget-card animate-slide-up" style="animation-delay: 0.2s">
+                <div class="budget-header">
+                    <div class="budget-title">Monthly Budget</div>
+                    <div class="budget-amount" id="budgetText">₱0 / ₱1000</div>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="budgetBar" style="width: 0%; background: linear-gradient(90deg, var(--accent-income), var(--accent-gold));"></div>
+                </div>
+            </div>
+
+            <div class="card goal-card animate-slide-up" style="animation-delay: 0.3s">
+                <div class="goal-header">
+                    <div class="goal-name">🎯 Savings Goal</div>
+                    <div class="goal-percent" id="goalPercent">0%</div>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="goalBar" style="width: 0%; background: linear-gradient(90deg, var(--accent-gold), #f97316);"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--text-muted);">
+                    <span id="goalCurrent">₱0</span>
+                    <span id="goalTarget">₱10,000</span>
+                </div>
+            </div>
+
+            <div class="quick-actions hide-scroll animate-slide-up" style="animation-delay: 0.4s">
+                <button class="quick-action-btn active" onclick="app.setPeriod('all')">All Time</button>
+                <button class="quick-action-btn" onclick="app.setPeriod('week')">This Week</button>
+                <button class="quick-action-btn" onclick="app.setPeriod('month')">This Month</button>
+                <button class="quick-action-btn" onclick="app.setPeriod('year')">This Year</button>
+            </div>
+        </div>
+
+        <!-- ADD TAB -->
+        <div class="tab-content" id="tab-add">
+            <div class="card">
+                <div class="type-selector">
+                    <div class="type-option selected" onclick="app.selectType('income')" id="type-income">
+                        <div class="type-icon">💰</div>
+                        <div class="type-text" style="color: var(--accent-income);">Add Money</div>
+                    </div>
+                    <div class="type-option expense-type" onclick="app.selectType('expense')" id="type-expense">
+                        <div class="type-icon">💸</div>
+                        <div class="type-text" style="color: var(--accent-expense);">Expense</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" class="form-input" id="amountInput" placeholder="0.00" step="0.01" min="0">
+                </div>
+
+                <div class="form-group" id="descGroup">
+                    <label class="form-label">Description <span style="color: var(--text-muted); font-weight: 400;">(Optional for income)</span></label>
+                    <input type="text" class="form-input" id="descInput" placeholder="What is this for?">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <div class="category-grid" id="categoryGrid">
+                        <!-- Categories injected by JS -->
+                    </div>
+                </div>
+
+                <div class="form-group" id="savingsGroup" style="display: none;">
+                    <label class="form-label">
+                        <input type="checkbox" id="savingsCheck" style="margin-right: 8px;">
+                        Add to Savings
+                    </label>
+                </div>
+
+                <button class="submit-btn" onclick="app.submitTransaction()">Add Transaction</button>
+            </div>
+        </div>
+
+        <!-- LOGS TAB -->
+        <div class="tab-content" id="tab-logs">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search transactions..." oninput="app.filterLogs()">
+            </div>
+
+            <div class="filter-tabs hide-scroll">
+                <button class="filter-tab active" onclick="app.filterType('all')">All</button>
+                <button class="filter-tab" onclick="app.filterType('income')">Income</button>
+                <button class="filter-tab" onclick="app.filterType('expense')">Expenses</button>
+            </div>
+
+            <div id="logsList">
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <div>No transactions yet</div>
+                    <div style="font-size: 13px; margin-top: 8px;">Tap "Add" to get started</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUMMARY TAB -->
+        <div class="tab-content" id="tab-summary">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">Cash Flow</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: var(--accent-income);"></div>
+                            <span>Income</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: var(--accent-expense);"></div>
+                            <span>Expense</span>
+                        </div>
+                    </div>
+                </div>
+                <canvas class="chart-canvas" id="trendChart"></canvas>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-title">Net Flow</div>
+                <div class="insight-value" id="netFlow">+$0.00</div>
+                <div class="insight-sub" id="flowInsight">You're doing great!</div>
+            </div>
+
+            <div class="card">
+                <div style="font-weight: 700; margin-bottom: 16px; font-size: 16px;">Top Categories</div>
+                <div id="categoryBreakdown">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal" onclick="app.closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">Edit Transaction</div>
+                <button class="modal-close" onclick="app.closeModal()">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Type</label>
+                <div class="type-selector">
+                    <div class="type-option" onclick="app.editSelectType('income')" id="edit-type-income">
+                        <div class="type-icon">💰</div>
+                        <div class="type-text" style="color: var(--accent-income);">Income</div>
+                    </div>
+                    <div class="type-option expense-type" onclick="app.editSelectType('expense')" id="edit-type-expense">
+                        <div class="type-icon">💸</div>
+                        <div class="type-text" style="color: var(--accent-expense);">Expense</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Amount</label>
+                <input type="number" class="form-input" id="editAmount" step="0.01" min="0">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <input type="text" class="form-input" id="editDesc">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Date & Time</label>
+                <input type="datetime-local" class="form-input" id="editDate">
+            </div>
+
+            <button class="submit-btn" onclick="app.saveEdit()">Save Changes</button>
+            <button class="delete-btn" onclick="app.deleteTransaction()">Delete Transaction</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer">
+        <div class="toast" id="toast">Transaction added!</div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="app.switchTab('balances')">
+            <span class="nav-icon">💳</span>
+            <span>Balances</span>
+        </button>
+        <button class="nav-item" onclick="app.switchTab('add')">
+            <span class="nav-icon" style="font-size: 28px;">➕</span>
+            <span>Add</span>
+        </button>
+        <button class="nav-item" onclick="app.switchTab('logs')">
+            <span class="nav-icon">📋</span>
+            <span>Logs</span>
+        </button>
+        <button class="nav-item" onclick="app.switchTab('summary')">
+            <span class="nav-icon">📊</span>
+            <span>Summary</span>
+        </button>
+    </nav>
+
+    <input type="file" id="importFile" style="display: none;" accept=".json" onchange="app.handleImport(this)">
+
+    <script src="script.js"></script>
+</body>
+</html>
