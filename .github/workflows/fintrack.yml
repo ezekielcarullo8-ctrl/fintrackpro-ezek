@@ -1,4 +1,5 @@
-name: Build eze_fintrack APK
+name: Build FinTrackPro APK
+
 on:
   push:
     branches: [ main ]
@@ -18,12 +19,12 @@ jobs:
     - name: Extract App Name from HTML Title
       id: get_title
       run: |
-        RAW_TITLE=$(grep -oP '(?<=<title>).*?(?=</title>)' index.html || echo "eze_fintrack")
+        RAW_TITLE=$(grep -oP '(?<=<title>).*?(?=</title>)' index.html || echo "FinTrackPro")
         CLEAN_APP_NAME=$(echo "$RAW_TITLE" | sed 's/[^a-zA-Z0-9 ]//g' | xargs)
         CLEAN_FILE_NAME=$(echo "$CLEAN_APP_NAME" | sed 's/ /_/g')
         if [ -z "$CLEAN_APP_NAME" ]; then
-          CLEAN_APP_NAME="eze_fintrack"
-          CLEAN_FILE_NAME="eze_fintrack"
+          CLEAN_APP_NAME="FinTrackPro"
+          CLEAN_FILE_NAME="FinTrackPro"
         fi
         echo "APP_NAME=$CLEAN_APP_NAME" >> $GITHUB_ENV
         echo "FILE_NAME=$CLEAN_FILE_NAME" >> $GITHUB_ENV
@@ -36,7 +37,7 @@ jobs:
         npm install @capacitor/core @capacitor/cli @capacitor/android
         npm install @capacitor/device @capacitor/filesystem @capacitor/share
         npm install @capacitor/assets --save-dev
-        echo "{\"appId\": \"com.ezek.eze_fintrack\", \"appName\": \"$APP_NAME\", \"webDir\": \"www\"}" > capacitor.config.json
+        echo "{\"appId\": \"com.ezek.FinTrackPro\", \"appName\": \"$APP_NAME\", \"webDir\": \"www\"}" > capacitor.config.json
         npx cap add android
 
     - name: Obfuscate JavaScript
@@ -67,24 +68,24 @@ jobs:
     - name: Full Package Isolation
       run: |
         # 1. Gradle app ID
-        sed -i 's/applicationId ".*"/applicationId "com.ezek.eze_fintrack"/' android/app/build.gradle
-        
+        sed -i 's/applicationId ".*"/applicationId "com.ezek.FinTrackPro"/' android/app/build.gradle
+
         # 2. AndroidManifest package name
-        sed -i 's/package=".*"/package="com.ezek.eze_fintrack"/' android/app/src/main/AndroidManifest.xml
-        
-        # 3. FileProvider reference
+        sed -i 's/package=".*"/package="com.ezek.FinTrackPro"/' android/app/src/main/AndroidManifest.xml
+
+        # 3. FileProvider reference (matches whatever authority Capacitor generated, regardless of old package name)
         find android/app/src/main/ -type f -name "AndroidManifest.xml" \
-          -exec sed -i -E 's/android:authorities="[^"]*\.fileprovider"/android:authorities="com.ezek.eze_fintrack.fileprovider"/g' {} +
-        
+          -exec sed -i -E 's/android:authorities="[^"]*\.fileprovider"/android:authorities="com.ezek.FinTrackPro.fileprovider"/g' {} +
+
         # 4. MainActivity Java package declaration
         find android/app/src/main/ -type f -name "MainActivity.java" \
-          -exec sed -i 's/^package .*;/package com.ezek.eze_fintrack;/' {} +
-        
-        # 5. Move MainActivity to correct folder path
-        mkdir -p android/app/src/main/java/com/ezek/eze_fintrack
+          -exec sed -i 's/^package .*;/package com.ezek.FinTrackPro;/' {} +
+
+        # 5. Move MainActivity to correct folder path matching new package
+        mkdir -p android/app/src/main/java/com/ezek/FinTrackPro
         find android/app/src/main/java -name "MainActivity.java" \
-          ! -path "*/com/ezek/eze_fintrack/*" \
-          -exec cp {} android/app/src/main/java/com/ezek/eze_fintrack/MainActivity.java \;
+          ! -path "*/com/ezek/FinTrackPro/*" \
+          -exec cp {} android/app/src/main/java/com/ezek/FinTrackPro/MainActivity.java \;
 
     - name: Set up JDK 21
       uses: actions/setup-java@v4
